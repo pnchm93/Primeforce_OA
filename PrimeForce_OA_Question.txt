@@ -1,0 +1,130 @@
+PrimeForce_OA_Question:
+
+Imagine Abhimanyu in Chakravyuha. There are 11 circles in the Chakravyuha surrounded by different enemies.
+Abhimanyu is located in the innermost circle and has to cross all the 11 circles to reach Pandavas army back. 
+ 
+Given:
+1. Each circle is guarded by different enemy where enemy is equipped with k1, k2……k11 powers
+Abhmanyu start from the innermost circle with p power Abhimanyu has a boon to skip fighting enemy
+a times 
+2. Abhmanyu can recharge himself with power b times 
+3. Battling in each circle will result in loss of the same power from Abhimanyu as the enemy. 
+4. If Abhmanyu enter the circle with energy less than the respective enemy, he will lose the battle
+5. k3 and k7 enemies are endured with power to regenerate themselves once with half of their initial
+power and can attack Abhimanyu from behind if he is battling in iteratively next circle 
+ 
+Write an algorithm to find if Abhimanyu can cross the Chakravyuh and test it with two sets of test cases.
+
+Solution:
+
+==> In this solution:
+I have make a canCross function that takes fours arguments as below:
+1. current_circle
+2. current_power
+3. remaining no of skips (a)
+4. remaining no of recharge (b)
+
+In this I am using the Dynamic programming approach to solve the problem. When energy of Abhimanyu is greater then he will fight and cross but in the case when energy of Abhimanyu is low than the current enemy in the circle, in that case, he has two case:
+1. He can skip the circle if a>0
+2. He can recharge himself if b>0
+
+Among these two cases, we have to use both of them dynamically in such a way so that Abhimanyu can finally cross all the circle. If can not cross finally, then we will return false.
+
+==> Here we are using the 4D dp, as four states are changing as:
+1. in which circle he is present
+2. what is current power
+3. remaining value of a
+4. remaining value of b
+
+==> For the special case when I=3 and I=7, then we are after killing the enemy(may be skip or recharge), we again compare Abhimanyu power with the half of the power of these enemy as they can revive with half of the power.
+
+So In this code we are moving form inner circle(1) to outer circle(11) with implementing all the base case and edge case. And where we fails to go across to 11th circle we return false.
+
+Here  is implementation:
+
+
+
+#include <bits/stdc++.h>
+
+using namespace std;
+
+int dp[12][1001][12][12];
+int initial_power, skips, recharges;
+vector<int> enemy_powers;
+
+bool canCross(int circle, int power, int skips, int recharges) {
+    if (circle > 11) {
+        return true;
+    }
+    
+    if (power <= 0) {
+        return false;
+    }
+    
+    if (dp[circle][power][skips][recharges] != -1) {
+        return dp[circle][power][skips][recharges];
+    }    
+
+    if (skips > 0) {
+        if (canCross(circle + 1, power, skips - 1, recharges)) {
+            return dp[circle][power][skips][recharges] = true;
+        }
+    }
+  
+    if (recharges > 0) {
+        if (canCross(circle, initial_power, skips, recharges - 1)) {
+            return dp[circle][power][skips][recharges] = true;
+        }
+    }
+
+    int required_power = enemy_powers[circle];
+    if (power >= required_power) {
+        int new_power = power - required_power;
+
+        if ((circle == 3 || circle == 7) && power >= required_power / 2) {
+            new_power -= required_power / 2;
+        }
+
+        if (canCross(circle + 1, new_power, skips, recharges)) {
+            return dp[circle][power][skips][recharges] = true;
+        }
+    }
+    
+    return dp[circle][power][skips][recharges] = false;
+}
+
+int main() {
+    memset(dp, -1, sizeof(dp));
+     // Sample Test Case 1
+    initial_power = 50;
+    skips = 1;
+    recharges = 2;
+    enemy_powers = {1,2,3,4,5,1,2,3,4,5,1};  // in this he will cross all the circle
+    
+    bool ans1=canCross(1, initial_power, skips, recharges);
+    
+    if(ans1 == true){
+      cout<<"Abhimanyu can pass the circle"<<endl;
+    }
+    else{
+      cout<<"Abhimanyu can not pass the circle"<<endl;
+    }
+
+    // Sample Test Case 2
+    initial_power = 100;
+    skips= 2;
+    recharges= 1;
+    enemy_powers = {10, 20, 50, 40, 30, 60, 50, 40, 30, 20, 10}; // in this case he can cross all the circle.
+    bool ans2=canCross(1, initial_power, skips, recharges);
+    
+    
+    if(ans2 == true){
+      cout<<"Abhimanyu can pass the circle"<<endl;
+    }
+    else{
+      cout<<"Abhimanyu can not pass the circle"<<endl;
+    }
+
+
+    return 0;
+}
